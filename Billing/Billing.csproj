@@ -18,8 +18,4 @@
     <Protobuf Include="Protos\billing.proto" GrpcServices="Server" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Services\" />
-  </ItemGroup>
-
 </Project>
