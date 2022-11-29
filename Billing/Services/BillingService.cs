@@ -1,15 +1,23 @@
-﻿using Grpc.Core;
+﻿using Billing.Data;
+using Billing.Models;
+using Grpc.Core;
 
 namespace Billing
 {
     public class BillingService : Billing.BillingBase
     {
-        public BillingService() { }
+        private readonly IUserRepository _userRepository;
 
-        public override Task ListUsers(None request, IServerStreamWriter<UserProfile> responseStream, ServerCallContext context)
+        public BillingService(IUserRepository users)
         {
-            return base.ListUsers(request, responseStream, context);
+            _userRepository = users;
         }
+
+        public override Task ListUsers
+            (None request, 
+            IServerStreamWriter<UserProfile> responseStream, 
+            ServerCallContext context)
+            => Task.FromResult(_userRepository.GetUsers().Select(user => user.UserProfile));
 
         public override Task<Response> CoinsEmission(EmissionAmount request, ServerCallContext context)
         {
