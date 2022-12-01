@@ -2,7 +2,7 @@
 {
     public class CoinTransactions
     {
-        public int TransactionId { get; set; }
-        public int CoinId { get; set; }
+        public long TransactionId { get; set; }
+        public long CoinId { get; set; }
     }
 }

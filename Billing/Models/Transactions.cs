@@ -2,8 +2,8 @@
 {
     public class Transactions
     {
-        public int Id { get; set; }
-        public int SenderId { get; set; }
-        public int ReceiverId { get; set; }
+        public long Id { get; set; }
+        public long SenderId { get; set; }
+        public long ReceiverId { get; set; }
     }
 }

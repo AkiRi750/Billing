@@ -2,8 +2,8 @@
 {
     public class User
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
         public UserProfile UserProfile { get; set; }
-        public int Rating { get; set; }
+        public long Rating { get; set; }
     }
 }
