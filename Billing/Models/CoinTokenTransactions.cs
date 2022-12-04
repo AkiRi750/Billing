@@ -1,8 +1,8 @@
 ﻿namespace Billing.Models
 {
-    public class CoinTransactions
+    public class CoinTokenTransactions
     {
         public long TransactionId { get; set; }
-        public long CoinId { get; set; }
+        public long CoinTokenId { get; set; }
     }
 }

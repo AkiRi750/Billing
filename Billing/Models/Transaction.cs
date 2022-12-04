@@ -1,6 +1,6 @@
 ﻿namespace Billing.Models
 {
-    public class Transactions
+    public class Transaction
     {
         public long Id { get; set; }
         public long SenderId { get; set; }
