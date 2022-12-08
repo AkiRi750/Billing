@@ -18,11 +18,15 @@ namespace Billing
             _coinTokenService = coinTokenService;
         }
 
-        public override Task ListUsers
-            (None request, 
-            IServerStreamWriter<UserProfile> responseStream, 
+        public override async Task ListUsers
+            (None request,
+            IServerStreamWriter<UserProfile> responseStream,
             ServerCallContext context)
-            => Task.FromResult(_userService.Get().Select(user => user.UserProfile));
+        {
+            var users = _userService.Get().Select(user => user.UserProfile);
+            foreach (var user in users)
+                await responseStream.WriteAsync(user);
+        }
 
         public override Task<Response> CoinsEmission(EmissionAmount request, ServerCallContext context)
         {
