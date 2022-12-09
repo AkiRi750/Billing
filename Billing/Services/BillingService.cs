@@ -73,6 +73,7 @@ namespace Billing
                 var coinToken = new CoinToken() { Id = GetCoinEmissionId(), OwnerId = user.Id };
                 lock (lockObject)
                 {
+                    user.UserProfile.Amount++;
                     _coinTokenService.Add(coinToken);
                 }
             }
