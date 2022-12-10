@@ -40,7 +40,8 @@ namespace Billing
             var task = Task.Run(() =>
             {
                 var users = _userService.Get();
-                var averageRating = users.Sum(x => x.Rating) / users.Count;
+                var totalRating = users.Sum(x => x.Rating);
+                var averageRating = totalRating / users.Count;
                 if (request.Amount < GetMinEmissionAmount(users, averageRating))
                     return new Response()
                     {
@@ -48,11 +49,20 @@ namespace Billing
                         Comment = "Not enough coins to emission"
                     };
 
+                long undistributedCoins = request.Amount;
+                User userWithMaxRating = users.First();
                 foreach (var user in users)
                 {
-                    var emissionAmount = GetEmissionAmountPerUser(user, averageRating);
+                    var emissionAmount = GetEmissionAmountPerUser(user, totalRating, request.Amount);
                     EmissionCoinsToUser(user, emissionAmount);
+                    if (user.Rating > userWithMaxRating.Rating)
+                        userWithMaxRating = user;
+                    undistributedCoins -= emissionAmount;
                 }
+
+                // Компенсация погрешности распределения GetEmissionAmountPerUser()
+                if (undistributedCoins > 0)
+                    EmissionCoinsToUser(userWithMaxRating, undistributedCoins);
 
                 return new Response() { Status = Response.Types.Status.Ok };
             });
@@ -61,10 +71,10 @@ namespace Billing
         }
 
         private long GetMinEmissionAmount(List<User> users, long averageRating)
-            => users.Select(user => GetEmissionAmountPerUser(user, averageRating)).Sum();
+            => users.Select(user => Math.Max(user.Rating / averageRating, 1L)).Sum();
 
-        private long GetEmissionAmountPerUser(User user, long averageRating)
-            => Math.Max(user.Rating / averageRating, 1L);
+        private long GetEmissionAmountPerUser(User user, long totalRating, long totalAmount = 1)
+            => Math.Max(user.Rating * totalAmount / totalRating, 1L);
 
         private void EmissionCoinsToUser(User user, long amount)
         {
