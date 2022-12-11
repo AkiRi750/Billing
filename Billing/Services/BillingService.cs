@@ -70,12 +70,22 @@ namespace Billing
             return task;
         }
 
+        /// <summary>
+        /// Вычисляет какое минимальное количество монет можно выпустить для пользователей, 
+        /// с учётом пропорциональности распределения
+        /// </summary>
         private long GetMinEmissionAmount(List<User> users, long averageRating)
             => users.Select(user => Math.Max(user.Rating / averageRating, 1L)).Sum();
 
+        /// <summary>
+        /// Вычисляет количество монет, зачисляемых пользователю при выпуске монет
+        /// </summary>
         private long GetEmissionAmountPerUser(User user, long totalRating, long totalAmount = 1)
             => Math.Max(user.Rating * totalAmount / totalRating, 1L);
 
+        /// <summary>
+        /// Выпускает данное количество монет для пользователя
+        /// </summary>
         private void EmissionCoinsToUser(User user, long amount)
         {
             for (long i = 0; i < amount; i++)
@@ -89,6 +99,9 @@ namespace Billing
             }
         }
 
+        /// <summary>
+        /// Возвращает id монеты для её создания
+        /// </summary>
         private long GetCoinEmissionId()
         {
             if (_coinTokenService.Get().Count == 0)
