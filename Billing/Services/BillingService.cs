@@ -90,23 +90,18 @@ namespace Billing
         {
             for (long i = 0; i < amount; i++)
             {
-                var coinToken = new CoinToken() { Id = GetCoinEmissionId(), OwnerId = user.Id };
+                var coinToken = new CoinToken() 
+                { 
+                    Id = _coinTokenService.GetCoinEmissionId(), 
+                    OwnerId = user.Id 
+                };
+
                 lock (lockObject)
                 {
                     user.UserProfile.Amount++;
                     _coinTokenService.Add(coinToken);
                 }
             }
-        }
-
-        /// <summary>
-        /// Возвращает id монеты для её создания
-        /// </summary>
-        private long GetCoinEmissionId()
-        {
-            if (_coinTokenService.Get().Count == 0)
-                return 1;
-            return _coinTokenService.Get().Last().Id + 1;
         }
 
         public override Task<Response> MoveCoins(MoveCoinsTransaction request, ServerCallContext context)
