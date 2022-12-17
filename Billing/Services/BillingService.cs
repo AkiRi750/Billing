@@ -139,6 +139,9 @@ namespace Billing
             return task;
         }
 
+        /// <summary>
+        /// Операция передачи монет
+        /// </summary>
         private void MovingCoins(User sourceUser, User destinationUser, long amount)
         {
             _userService.AmountTransfer(sourceUser, destinationUser, amount);
@@ -173,11 +176,11 @@ namespace Billing
                     Comment = $"User {request.SrcUser} is not exists"
                 };
 
-            if (!_userService.IsUserExists(request.SrcUser))
+            if (!_userService.IsUserExists(request.DstUser))
                 return new Response()
                 {
                     Status = Response.Types.Status.Failed,
-                    Comment = $"User {request.SrcUser} is not exists"
+                    Comment = $"User {request.DstUser} is not exists"
                 };
 
             var sourceUser = _userService.GetUser(request.SrcUser);
