@@ -36,15 +36,15 @@ namespace Billing
 
         public override Task<Response> CoinsEmission(EmissionAmount request, ServerCallContext context)
         {
-            if (request.Amount <= 0 || request.Amount < _userService.Get().Count)
-                return Task.FromResult(new Response() 
-                {
-                    Status = Response.Types.Status.Failed, 
-                    Comment = "Invalid coin emission ammount"
-                });
-
             var task = Task.Run(() =>
             {
+                if (request.Amount <= 0 || request.Amount < _userService.Get().Count)
+                    return new Response()
+                    {
+                        Status = Response.Types.Status.Failed,
+                        Comment = "Invalid coin emission ammount"
+                    };
+
                 var users = _userService.Get();
                 var totalRating = users.Sum(x => x.Rating);
                 var averageRating = totalRating / users.Count;
@@ -55,25 +55,33 @@ namespace Billing
                         Comment = "Not enough coins to emission"
                     };
 
-                long undistributedCoins = request.Amount;
-                User userWithMaxRating = users.First();
-                foreach (var user in users)
-                {
-                    var emissionAmount = GetEmissionAmountPerUser(user, totalRating, request.Amount);
-                    EmissionCoinsToUser(user, emissionAmount);
-                    if (user.Rating > userWithMaxRating.Rating)
-                        userWithMaxRating = user;
-                    undistributedCoins -= emissionAmount;
-                }
-
-                // Компенсация погрешности распределения GetEmissionAmountPerUser()
-                if (undistributedCoins > 0)
-                    EmissionCoinsToUser(userWithMaxRating, undistributedCoins);
-
-                return new Response() { Status = Response.Types.Status.Ok };
+                return CoinsEmissionOperation(users, request, totalRating);
             });
 
             return task;
+        }
+
+        /// <summary>
+        /// Операция эмиссии монет
+        /// </summary>
+        private Response CoinsEmissionOperation(List<User> users, EmissionAmount request, long totalRating)
+        {
+            long undistributedCoins = request.Amount;
+            User userWithMaxRating = users.First();
+            foreach (var user in users)
+            {
+                var emissionAmount = GetEmissionAmountPerUser(user, totalRating, request.Amount);
+                EmissionCoinsToUser(user, emissionAmount);
+                if (user.Rating > userWithMaxRating.Rating)
+                    userWithMaxRating = user;
+                undistributedCoins -= emissionAmount;
+            }
+
+            // Компенсация погрешности распределения GetEmissionAmountPerUser()
+            if (undistributedCoins > 0)
+                EmissionCoinsToUser(userWithMaxRating, undistributedCoins);
+
+            return new Response() { Status = Response.Types.Status.Ok };
         }
 
         /// <summary>
