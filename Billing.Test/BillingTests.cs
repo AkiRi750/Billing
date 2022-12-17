@@ -19,7 +19,9 @@ namespace Billing.Test
                 .Returns(GetUsers());
             var billingService = new BillingService
                 (_userService.Object,
-                _coinTokenService.Object);
+                _coinTokenService.Object,
+                null,
+                null);
             var request = new EmissionAmount() { Amount = amount };
 
             var result = await billingService.CoinsEmission(request, null);
@@ -38,7 +40,9 @@ namespace Billing.Test
                 .Returns(GetUsers());
             var billingService = new BillingService
                 (_userService.Object, 
-                _coinTokenService.Object);
+                _coinTokenService.Object,
+                null,
+                null);
             var request = new EmissionAmount() { Amount = amount };
 
             var result = await billingService.CoinsEmission(request, null);
@@ -59,7 +63,9 @@ namespace Billing.Test
                 .Returns(new List<CoinToken>());
             var billingService = new BillingService
                 (_userService.Object,
-                _coinTokenService.Object);
+                _coinTokenService.Object,
+                null,
+                null);
             var request = new EmissionAmount() { Amount = amount };
 
             var result = await billingService.CoinsEmission(request, null);
@@ -81,7 +87,9 @@ namespace Billing.Test
                 .Returns(GetUsers());
             var billingService = new BillingService
                 (_userService.Object,
-                _coinTokenService.Object);
+                _coinTokenService.Object,
+                null,
+                null);
             var request = new EmissionAmount() { Amount = amount };
 
             var result = await billingService.CoinsEmission(request, null);

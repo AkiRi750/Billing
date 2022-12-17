@@ -8,14 +8,20 @@ namespace Billing
     {
         private readonly IUserService _userService;
         private readonly ICoinTokenService _coinTokenService;
+        private readonly ITransactionService _transactionService;
+        private readonly ICoinTokenTransactionsService _coinTokenTransactionsService;
         private readonly object lockObject = new object();
 
         public BillingService
             (IUserService userService, 
-            ICoinTokenService coinTokenService)
+            ICoinTokenService coinTokenService,
+            ITransactionService transactionService,
+            ICoinTokenTransactionsService coinTokenTransactionsService)
         {
             _userService = userService;
             _coinTokenService = coinTokenService;
+            _transactionService = transactionService;
+            _coinTokenTransactionsService = coinTokenTransactionsService;
         }
 
         public override async Task ListUsers
@@ -106,7 +112,75 @@ namespace Billing
 
         public override Task<Response> MoveCoins(MoveCoinsTransaction request, ServerCallContext context)
         {
-            return base.MoveCoins(request, context);
+            var task = Task.Run(() =>
+            {
+                var response = IsMovingCoinsPossible(request);
+                if (response.Status == Response.Types.Status.Failed)
+                    return response;
+
+                var sourceUser = _userService.GetUser(request.SrcUser);
+                var destinationUser = _userService.GetUser(request.DstUser);
+                lock(lockObject)
+                {
+                    MovingCoins(sourceUser, destinationUser, request.Amount);
+                }
+
+                return new Response() { Status = Response.Types.Status.Ok };
+            });
+
+            return task;
+        }
+
+        private void MovingCoins(User sourceUser, User destinationUser, long amount)
+        {
+            _userService.AmountTransfer(sourceUser, destinationUser, amount);
+            var transactionId = _transactionService.GetTransactionCreationId();
+            _transactionService.Add(new Transaction()
+            {
+                Id = transactionId,
+                SenderId = sourceUser.Id,
+                ReceiverId = destinationUser.Id
+            });
+            var changedCoinIds = _coinTokenService.ChangeCoinTokensOwner(sourceUser, destinationUser, amount);
+            
+            foreach (var coinToken in changedCoinIds)
+            {
+                _coinTokenTransactionsService.Add(new CoinTokenTransactions()
+                {
+                    TransactionId = transactionId,
+                    CoinTokenId = coinToken
+                });
+            }
+        }
+
+        /// <summary>
+        /// Проверка возможности перевода монет между пользователями
+        /// </summary>
+        private Response IsMovingCoinsPossible(MoveCoinsTransaction request)
+        {
+            if (!_userService.IsUserExists(request.SrcUser))
+                return new Response()
+                {
+                    Status = Response.Types.Status.Failed,
+                    Comment = $"User {request.SrcUser} is not exists"
+                };
+
+            if (!_userService.IsUserExists(request.SrcUser))
+                return new Response()
+                {
+                    Status = Response.Types.Status.Failed,
+                    Comment = $"User {request.SrcUser} is not exists"
+                };
+
+            var sourceUser = _userService.GetUser(request.SrcUser);
+            if (!_userService.IsEnoughCoinsToTransfer(sourceUser, request.Amount))
+                return new Response()
+                {
+                    Status = Response.Types.Status.Failed,
+                    Comment = $"User {request.SrcUser} doesn't have enough coins to transfer"
+                };
+
+            return new Response() { Status = Response.Types.Status.Ok };
         }
 
         public override Task<Coin> LongestHistoryCoin(None request, ServerCallContext context)

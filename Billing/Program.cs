@@ -10,6 +10,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddGrpc();
 builder.Services.AddSingleton<IUserService, UserService>();
 builder.Services.AddSingleton<ICoinTokenService, CoinTokenService>();
+builder.Services.AddSingleton<ITransactionService, TransactionService>();
+builder.Services.AddSingleton<ICoinTokenTransactionsService, CoinTokenTransactionsService>();
 
 var app = builder.Build();
 
