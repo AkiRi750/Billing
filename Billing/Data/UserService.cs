@@ -21,10 +21,6 @@ namespace Billing.Data
         public User GetUser(string username) 
             => _users.FirstOrDefault(u => u.UserProfile.Name == username);
 
-        public bool IsEnoughCoinsToTransfer(User sourceUser, long amount) 
-            => _users.First(u => u.UserProfile.Name == sourceUser.UserProfile.Name)
-                .UserProfile.Amount >= amount;
-
         public bool IsUserExists(string user) 
             => _users.Any(u => u.UserProfile.Name == user);
 

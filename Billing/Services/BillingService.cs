@@ -169,6 +169,20 @@ namespace Billing
         /// </summary>
         private Response IsMovingCoinsPossible(MoveCoinsTransaction request)
         {
+            if (request.Amount <= 0)
+                return new Response()
+                {
+                    Status = Response.Types.Status.Failed,
+                    Comment = $"Invalid coins movement amount"
+                };
+
+            if (request.SrcUser == request.DstUser)
+                return new Response()
+                {
+                    Status = Response.Types.Status.Failed,
+                    Comment = $"Coins cannot be moved to yourself"
+                };
+
             if (!_userService.IsUserExists(request.SrcUser))
                 return new Response()
                 {
@@ -184,7 +198,7 @@ namespace Billing
                 };
 
             var sourceUser = _userService.GetUser(request.SrcUser);
-            if (!_userService.IsEnoughCoinsToTransfer(sourceUser, request.Amount))
+            if (sourceUser.UserProfile.Amount < request.Amount)
                 return new Response()
                 {
                     Status = Response.Types.Status.Failed,
