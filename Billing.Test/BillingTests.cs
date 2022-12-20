@@ -249,8 +249,8 @@ namespace Billing.Test
             new List<User>()
             {
                 new User() { Id = 1, Rating = -2000, UserProfile = new UserProfile() { Name = "Tom", Amount = 100 } },
-                new User() { Id = 1, Rating = 500, UserProfile = new UserProfile() { Name = "Tim", Amount = 0 } },
-                new User() { Id = 1, Rating = 4000, UserProfile = new UserProfile() { Name = "Bob", Amount = 0 } }
+                new User() { Id = 2, Rating = 500, UserProfile = new UserProfile() { Name = "Tim", Amount = 0 } },
+                new User() { Id = 3, Rating = 4000, UserProfile = new UserProfile() { Name = "Bob", Amount = 0 } }
             };
     }
 }
