@@ -1,6 +1,8 @@
 ﻿using Billing.Data;
 using Billing.Models;
 using Grpc.Core;
+using System.Reflection;
+using System.Text;
 
 namespace Billing
 {
@@ -154,12 +156,12 @@ namespace Billing
             });
             var changedCoinIds = _coinTokenService.ChangeCoinTokensOwner(sourceUser, destinationUser, amount);
             
-            foreach (var coinToken in changedCoinIds)
+            foreach (var coinId in changedCoinIds)
             {
-                _coinTokenTransactionsService.Add(new CoinTokenTransactions()
+                _coinTokenTransactionsService.Add(new CoinTokenTransaction()
                 {
                     TransactionId = transactionId,
-                    CoinTokenId = coinToken
+                    CoinTokenId = coinId
                 });
             }
         }
@@ -210,7 +212,34 @@ namespace Billing
 
         public override Task<Coin> LongestHistoryCoin(None request, ServerCallContext context)
         {
-            return base.LongestHistoryCoin(request, context);
+            var task = Task.Run(() =>
+            {
+                if (!_coinTokenTransactionsService.Get().Any())
+                    throw new Exception("There is no moved coins");
+                var longestCoinId = _coinTokenTransactionsService.GetLongestCoinTokenId();
+                var coinTokenTransactions = _coinTokenTransactionsService.Get(longestCoinId);
+                var transactions = _transactionService.Get(coinTokenTransactions);
+
+                return new Coin() { Id = longestCoinId, History = FormCoinTokenMovementHistory(transactions)};
+            });
+
+            return task;
         }
+
+        /// <summary>
+        /// Формирует историю перемещений монеты
+        /// </summary>
+        private string FormCoinTokenMovementHistory(IEnumerable<Transaction> transactions)
+        {
+            var history = new StringBuilder();
+            history.Append(@"[Sender|:|Receiver]:");
+            foreach (var t in transactions)
+                history.Append($"[{GetUserName(t.SenderId)}|:|{GetUserName(t.ReceiverId)}]");
+
+            return history.ToString();
+        }
+
+        private string GetUserName(long userId)
+            => _userService.GetUser(userId).UserProfile.Name;
     }
 }

@@ -4,6 +4,9 @@ namespace Billing.Data
 {
     public interface ICoinTokenTransactionsService
     {
-        void Add(CoinTokenTransactions coinTokenTransactions);
+        List<CoinTokenTransaction> Get();
+        IEnumerable<CoinTokenTransaction> Get(long coinId);
+        void Add(CoinTokenTransaction coinTokenTransactions);
+        long GetLongestCoinTokenId();
     }
 }

@@ -21,6 +21,9 @@ namespace Billing.Data
         public User GetUser(string username) 
             => _users.FirstOrDefault(u => u.UserProfile.Name == username);
 
+        public User GetUser(long id)
+            => _users.FirstOrDefault(u => u.Id == id);
+
         public bool IsUserExists(string user) 
             => _users.Any(u => u.UserProfile.Name == user);
 

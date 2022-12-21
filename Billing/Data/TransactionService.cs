@@ -8,6 +8,12 @@ namespace Billing.Data
 
         public void Add(Transaction transaction) => _transactions.Add(transaction);
 
+        public Transaction Get(CoinTokenTransaction coinTokenTransaction)
+            => _transactions.Single(x => x.Id == coinTokenTransaction.TransactionId);
+
+        public IEnumerable<Transaction> Get(IEnumerable<CoinTokenTransaction> coinTokenTransactions)
+            => coinTokenTransactions.Select(x => Get(x));
+
         /// <summary>
         /// Возвращает id транзакции для её создания
         /// </summary>

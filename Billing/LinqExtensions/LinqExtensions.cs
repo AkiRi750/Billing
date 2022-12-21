@@ -12,5 +12,13 @@
                 yield return item;
             }
         }
+
+        public static long CountLong<T>(this IEnumerable<T> longs)
+        {
+            long count = 0;
+            foreach (var item in longs)
+                count++;
+            return count;
+        }
     }
 }
